@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 
 const users = require("./Routes/Users.js");
-const notes = require("./Routes/Notes");
+const notes = require("./Routes/Notes.js");
 
 app.use(express.json());
 app.use("/api", users);
