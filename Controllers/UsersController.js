@@ -1,14 +1,10 @@
 const { addUser, checkUser } = require("../Services/UserServices");
+const { hashPassword, comparePassword } = require("../bcrypt");
+const jwt = require("jsonwebtoken");
 
-module.exports = {
+const createUser = {
   post: async (req, res) => {
     const { username, password, email } = req.body;
-
-    const user = {
-      username: username,
-      password: password,
-      email: email,
-    };
 
     try {
       const foundUser = await checkUser(username);
@@ -24,12 +20,52 @@ module.exports = {
         return;
       }
 
+      //HASH the password
+      const encryptedPassword = await hashPassword(password);
+
+      const user = {
+        username: username,
+        password: encryptedPassword,
+        email: email,
+      };
+
       await addUser(user);
-      res
-        .status(200)
-        .json({ message: "User has been successfully created!", user: user });
+      res.status(200).json({ message: "User has been successfully created!" });
     } catch (error) {
       res.status(500);
     }
   },
 };
+
+const loginUser = {
+  post: async (req, res) => {
+    const { username, password, email } = req.body;
+    try {
+      const user = await checkUser(username);
+      // console.log(user);
+      if (user == null) {
+        res.status(404).json({ message: "User not found" });
+        return;
+      }
+
+      const comparedPassword = await comparePassword(password, user.password);
+      if (comparedPassword) {
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+          expiresIn: 300,
+        });
+
+        let result = {
+          token: token,
+        };
+        res.status(200).json(result);
+      } else {
+        res.status(404).json({ message: "Password is wrong!" });
+        return;
+      }
+    } catch (error) {
+      res.status(500);
+    }
+  },
+};
+
+module.exports = { createUser, loginUser };
