@@ -2,7 +2,7 @@ const { addNote } = require("../Services/NotesServices");
 
 const createNote = {
   post: async (req, res) => {
-    const { title, text } = req.body;
+    const { title, text } = req.body.note;
     const username = req.user.username; //getting the username from the request from my middleware authentication
 
     const createdNote = {
@@ -21,6 +21,7 @@ const createNote = {
         return;
       }
       await addNote(createdNote);
+      res.status(200).json({ message: "Note has been added successfully!" });
     } catch (error) {
       res.status(500);
     }

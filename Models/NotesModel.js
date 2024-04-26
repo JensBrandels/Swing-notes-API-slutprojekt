@@ -5,4 +5,4 @@ const notesDB = new Datastore({
   autoload: true,
 });
 
-module.exports = { notesDB };
+module.exports = notesDB;

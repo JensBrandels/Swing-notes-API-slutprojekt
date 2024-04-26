@@ -50,9 +50,13 @@ const loginUser = {
 
       const comparedPassword = await comparePassword(password, user.password);
       if (comparedPassword) {
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-          expiresIn: 300,
-        });
+        const token = jwt.sign(
+          { id: user._id, username: user.username },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: "2h",
+          }
+        );
 
         let result = {
           token: token,
