@@ -15,8 +15,8 @@ const authenticateToken = (req, res, next) => {
         .json({ message: "token has expired, please login again!" });
     }
     req.user = user;
+    next();
   });
-  next();
 };
 
 module.exports = { authenticateToken };
