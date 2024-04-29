@@ -1,12 +1,16 @@
 const {
   addNote,
-  findUserNotes,
   getDateAndTime,
+  findUserNotesByUsername,
+  findUserNotesByNoteId,
+  updateNoteInDb,
 } = require("../Services/NotesServices");
+
+//here's the POST for notes
 
 const createNote = {
   post: async (req, res) => {
-    const { title, text } = req.body.note;
+    const { title, text } = req.body;
     const username = req.user.username; //getting the username from the request from my middleware authentication
 
     if (title.length > 50) {
@@ -23,12 +27,9 @@ const createNote = {
 
     const createdNote = {
       user: username,
-      note: {
-        title: title,
-        text: text,
-        createdAt: getDateAndTime(),
-        modifiedAt: "",
-      },
+      title: title,
+      text: text,
+      createdAt: getDateAndTime(),
     };
 
     try {
@@ -46,17 +47,22 @@ const createNote = {
   },
 };
 
+//here's the GET for Notes
+
 const getUserNotes = {
   get: async (req, res) => {
     const username = req.user.username;
 
     if (username == null || username == undefined) {
-      res.status(418).json({ message: "That username seems wrong!" });
+      res.status(418).json({
+        message:
+          "Seems like somethings wrong, login again to refresh your token! Username connected to token could not be found!",
+      });
       return;
     }
 
     try {
-      const allNotes = await findUserNotes(username);
+      const allNotes = await findUserNotesByUsername(username);
       // console.log("Found Notes", allNotes);
       res.status(200).json(allNotes);
     } catch (error) {
@@ -64,4 +70,58 @@ const getUserNotes = {
     }
   },
 };
-module.exports = { createNote, getUserNotes };
+
+//here's the DELETE for notes
+
+const deleteUserNote = {
+  delete: async (req, res) => {
+    //woopwoop
+  },
+};
+
+//here's the PUT for notes
+
+const modifyUserNote = {
+  put: async (req, res) => {
+    const id = req.params.id;
+    const { text } = req.body;
+    const username = req.user.username;
+
+    if (username == null || username == undefined) {
+      res.status(418).json({
+        message: "No note found!",
+      });
+      return;
+    }
+
+    try {
+      const foundNote = await findUserNotesByNoteId(id);
+      if (!foundNote) {
+        return res.status(404).json({ message: "Note not found!" });
+      }
+      //logga noten för nu
+      console.log("foundNote", foundNote);
+
+      const updatedNote = {
+        text: (foundNote.text = text || foundNote.text),
+        modifiedAt: (foundNote.modifiedAt = getDateAndTime()),
+      };
+
+      console.log("updatedNote", updatedNote);
+      await updateNoteInDb(id, updatedNote);
+      res.status(200).json({ message: "Note updated successfully!" });
+    } catch (error) {
+      res.status(500).json({ message: "Server went kaboom!" });
+    }
+  },
+};
+module.exports = { createNote, getUserNotes, deleteUserNote, modifyUserNote };
+
+// const username = req.user.username;
+
+// if (username == null || username == undefined) {
+//   res.status(418).json({
+//     message:
+//       "Seems like somethings wrong, login again to refresh your token! Username connected to token could not be found!",
+//   });
+// }

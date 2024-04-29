@@ -21,7 +21,7 @@ const getDateAndTime = () => {
   return year + "-" + month + "-" + date + " " + hours + ":" + minutes;
 };
 
-const findUserNotes = async (username) => {
+const findUserNotesByUsername = async (username) => {
   try {
     return await notesDB.find({ user: username });
   } catch (error) {
@@ -30,4 +30,29 @@ const findUserNotes = async (username) => {
   }
 };
 
-module.exports = { addNote, findUserNotes, getDateAndTime };
+const findUserNotesByNoteId = async (id) => {
+  console.log("Note id", id);
+  try {
+    return await notesDB.findOne({ _id: id });
+  } catch (error) {
+    console.log("error", error);
+    console.log("Failed to fetch specific note");
+  }
+};
+
+const updateNoteInDb = async (id, updatedNote) => {
+  try {
+    const result = await notesDB.update({ _id: id }, { $set: updatedNote }, {});
+    return result;
+  } catch (error) {
+    console.log("Unable to update note in database");
+  }
+};
+
+module.exports = {
+  addNote,
+  findUserNotesByUsername,
+  getDateAndTime,
+  findUserNotesByNoteId,
+  updateNoteInDb,
+};
