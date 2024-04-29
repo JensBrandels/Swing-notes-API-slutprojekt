@@ -39,7 +39,7 @@ const createUser = {
 
 const loginUser = {
   post: async (req, res) => {
-    const { username, password, email } = req.body;
+    const { username, password } = req.body;
     try {
       const user = await checkUser(username);
       // console.log(user);
