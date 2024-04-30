@@ -21,22 +21,19 @@ const getDateAndTime = () => {
   return year + "-" + month + "-" + date + " " + hours + ":" + minutes;
 };
 
-const findUserNotesByUsername = async (username) => {
+const findUserNotesByUserid = async (userId) => {
   try {
-    return await notesDB.find({ user: username });
+    return await notesDB.find({ userId: userId });
   } catch (error) {
-    console.log("error", error);
-    throw new Error("Failed to fetch user notes");
+    throw error;
   }
 };
 
-const findUserNotesByNoteId = async (id, username) => {
-  console.log("Note id", id);
+const findUserNotesByNoteId = async (id, userId) => {
   try {
-    return await notesDB.findOne({ _id: id, user: username });
+    return await notesDB.findOne({ _id: id, userId: userId });
   } catch (error) {
-    console.log("error", error);
-    console.log("Failed to fetch specific note");
+    throw error;
   }
 };
 
@@ -59,11 +56,18 @@ const deleteNote = async (id) => {
   }
 };
 
+const searchForNotes = (allNotes, title) => {
+  return allNotes.filter((note) =>
+    note.title.toLowerCase().includes(title.toLowerCase())
+  );
+};
+
 module.exports = {
   addNote,
-  findUserNotesByUsername,
+  findUserNotesByUserid,
   getDateAndTime,
   findUserNotesByNoteId,
   updateNoteInDb,
   deleteNote,
+  searchForNotes,
 };

@@ -1,10 +1,11 @@
 const {
   addNote,
   getDateAndTime,
-  findUserNotesByUsername,
   findUserNotesByNoteId,
   updateNoteInDb,
   deleteNote,
+  searchForNotes,
+  findUserNotesByUserid,
 } = require("../Services/NotesServices");
 
 //here's the POST for notes
@@ -12,7 +13,7 @@ const {
 const createNote = {
   post: async (req, res) => {
     const { title, text } = req.body;
-    const username = req.user.username; //getting the username from the request from my middleware authentication
+    const userId = req.user.id; //getting the userID from the request from my middleware authentication
 
     if (title.length > 50) {
       return res
@@ -27,7 +28,7 @@ const createNote = {
     }
 
     const createdNote = {
-      user: username,
+      userId: userId,
       title: title,
       text: text,
       createdAt: getDateAndTime(),
@@ -56,10 +57,10 @@ const createNote = {
 
 const getUserNotes = {
   get: async (req, res) => {
-    const username = req.user.username;
+    const userId = req.user.id;
 
     try {
-      const allNotes = await findUserNotesByUsername(username);
+      const allNotes = await findUserNotesByUserid(userId);
       // console.log("Found Notes", allNotes);
       res.status(200).send(allNotes);
     } catch (error) {
@@ -73,10 +74,10 @@ const getUserNotes = {
 const deleteUserNote = {
   delete: async (req, res) => {
     const id = req.params.id;
-    const username = req.user.username;
+    const userId = req.user.id;
 
     try {
-      const foundNote = await findUserNotesByNoteId(id, username);
+      const foundNote = await findUserNotesByNoteId(id, userId);
       if (!foundNote) {
         return res.status(404).send({ message: "Note not found!" });
       }
@@ -95,23 +96,21 @@ const deleteUserNote = {
 const modifyUserNote = {
   put: async (req, res) => {
     const id = req.params.id;
-    const { text } = req.body;
-    const username = req.user.username;
+    const { text, title } = req.body;
+    const userId = req.user.id;
 
     try {
-      const foundNote = await findUserNotesByNoteId(id, username);
+      const foundNote = await findUserNotesByNoteId(id, userId);
       if (!foundNote) {
         return res.status(404).send({ message: "Note not found!" });
       }
-      //logga noten för nu
-      // console.log("foundNote", foundNote);
 
       const updatedNote = {
+        title: (foundNote.title = title || foundNote.title),
         text: (foundNote.text = text || foundNote.text),
         modifiedAt: (foundNote.modifiedAt = getDateAndTime()),
       };
 
-      // console.log("updatedNote", updatedNote);
       const changedNote = await updateNoteInDb(id, updatedNote);
       res
         .status(200)
@@ -121,4 +120,32 @@ const modifyUserNote = {
     }
   },
 };
-module.exports = { createNote, getUserNotes, deleteUserNote, modifyUserNote };
+
+//VG-KRAVET -- GET request för att söka bland usernotes
+
+const searchThroughNotes = {
+  get: async (req, res) => {
+    const userId = req.user.id;
+    const { title } = req.body;
+
+    try {
+      const allNotes = await findUserNotesByUserid(userId); //first get all notes from user
+      console.log(allNotes);
+      const filteredNotes = await searchForNotes(allNotes, title);
+      res.status(200).send({
+        message: "These are the notes you found!",
+        notes: filteredNotes,
+      });
+    } catch (error) {
+      res.sendStatus(500);
+    }
+  },
+};
+
+module.exports = {
+  createNote,
+  getUserNotes,
+  deleteUserNote,
+  modifyUserNote,
+  searchThroughNotes,
+};
