@@ -30,10 +30,10 @@ const findUserNotesByUsername = async (username) => {
   }
 };
 
-const findUserNotesByNoteId = async (id) => {
+const findUserNotesByNoteId = async (id, username) => {
   console.log("Note id", id);
   try {
-    return await notesDB.findOne({ _id: id });
+    return await notesDB.findOne({ _id: id, user: username });
   } catch (error) {
     console.log("error", error);
     console.log("Failed to fetch specific note");
@@ -49,10 +49,21 @@ const updateNoteInDb = async (id, updatedNote) => {
   }
 };
 
+const deleteNote = async (id) => {
+  try {
+    await notesDB.remove({ _id: id });
+    await notesDB.loadDatabase();
+    console.log("Note deleted and database refreshed");
+  } catch (err) {
+    throw new Error("Couldn't delete the note!");
+  }
+};
+
 module.exports = {
   addNote,
   findUserNotesByUsername,
   getDateAndTime,
   findUserNotesByNoteId,
   updateNoteInDb,
+  deleteNote,
 };

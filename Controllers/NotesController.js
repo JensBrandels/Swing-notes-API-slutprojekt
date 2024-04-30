@@ -4,6 +4,7 @@ const {
   findUserNotesByUsername,
   findUserNotesByNoteId,
   updateNoteInDb,
+  deleteNote,
 } = require("../Services/NotesServices");
 
 //here's the POST for notes
@@ -16,13 +17,13 @@ const createNote = {
     if (title.length > 50) {
       return res
         .status(400)
-        .json({ message: "Title can't be longer than 50 characters" });
+        .send({ message: "Title can't be longer than 50 characters" });
     }
 
     if (text.length > 300) {
       return res
         .status(400)
-        .json({ message: "Text can't be longer than 300 characters" });
+        .send({ message: "Text can't be longer than 300 characters" });
     }
 
     const createdNote = {
@@ -30,19 +31,23 @@ const createNote = {
       title: title,
       text: text,
       createdAt: getDateAndTime(),
+      modifiedAt: getDateAndTime(),
     };
 
     try {
       if (title == "" || text == "") {
         res
           .status(406)
-          .json({ message: "Notes need to have a Title AND text!" });
+          .send({ message: "Notes need to have a Title AND text!" });
         return;
       }
       await addNote(createdNote);
-      res.status(200).json({ message: "Note has been added successfully!" });
+      res.status(200).send({
+        message: "Note has been added successfully!",
+        note: createdNote,
+      });
     } catch (error) {
-      res.status(500);
+      res.sendStatus(500);
     }
   },
 };
@@ -53,20 +58,12 @@ const getUserNotes = {
   get: async (req, res) => {
     const username = req.user.username;
 
-    if (username == null || username == undefined) {
-      res.status(418).json({
-        message:
-          "Seems like somethings wrong, login again to refresh your token! Username connected to token could not be found!",
-      });
-      return;
-    }
-
     try {
       const allNotes = await findUserNotesByUsername(username);
       // console.log("Found Notes", allNotes);
-      res.status(200).json(allNotes);
+      res.status(200).send(allNotes);
     } catch (error) {
-      res.status(500).json({ message: "Server went kaboom!" });
+      res.sendStatus(500);
     }
   },
 };
@@ -75,7 +72,21 @@ const getUserNotes = {
 
 const deleteUserNote = {
   delete: async (req, res) => {
-    //woopwoop
+    const id = req.params.id;
+    const username = req.user.username;
+
+    try {
+      const foundNote = await findUserNotesByNoteId(id, username);
+      if (!foundNote) {
+        return res.status(404).send({ message: "Note not found!" });
+      }
+      const deletedNote = await deleteNote(foundNote._id);
+      res
+        .status(200)
+        .send({ message: "Note deleted!", deletedNote: deletedNote });
+    } catch (error) {
+      res.sendStatus(500);
+    }
   },
 };
 
@@ -87,41 +98,27 @@ const modifyUserNote = {
     const { text } = req.body;
     const username = req.user.username;
 
-    if (username == null || username == undefined) {
-      res.status(418).json({
-        message: "No note found!",
-      });
-      return;
-    }
-
     try {
-      const foundNote = await findUserNotesByNoteId(id);
+      const foundNote = await findUserNotesByNoteId(id, username);
       if (!foundNote) {
-        return res.status(404).json({ message: "Note not found!" });
+        return res.status(404).send({ message: "Note not found!" });
       }
       //logga noten för nu
-      console.log("foundNote", foundNote);
+      // console.log("foundNote", foundNote);
 
       const updatedNote = {
         text: (foundNote.text = text || foundNote.text),
         modifiedAt: (foundNote.modifiedAt = getDateAndTime()),
       };
 
-      console.log("updatedNote", updatedNote);
-      await updateNoteInDb(id, updatedNote);
-      res.status(200).json({ message: "Note updated successfully!" });
+      // console.log("updatedNote", updatedNote);
+      const changedNote = await updateNoteInDb(id, updatedNote);
+      res
+        .status(200)
+        .send({ message: "Note updated successfully!", note: changedNote });
     } catch (error) {
-      res.status(500).json({ message: "Server went kaboom!" });
+      res.sendStatus(500);
     }
   },
 };
 module.exports = { createNote, getUserNotes, deleteUserNote, modifyUserNote };
-
-// const username = req.user.username;
-
-// if (username == null || username == undefined) {
-//   res.status(418).json({
-//     message:
-//       "Seems like somethings wrong, login again to refresh your token! Username connected to token could not be found!",
-//   });
-// }

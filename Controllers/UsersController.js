@@ -9,7 +9,7 @@ const createUser = {
     try {
       const foundUser = await checkUser(username);
       if (foundUser) {
-        res.status(409).json({ message: "Username already exists!" });
+        res.status(409).send({ message: "Username already exists!" });
         return;
       }
 
