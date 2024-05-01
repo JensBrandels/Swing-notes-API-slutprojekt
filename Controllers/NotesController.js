@@ -112,9 +112,10 @@ const modifyUserNote = {
       };
 
       const changedNote = await updateNoteInDb(id, updatedNote);
-      res
-        .status(200)
-        .send({ message: "Note updated successfully!", note: changedNote });
+      res.status(200).send({
+        message: "Note updated successfully!",
+        notesChanged: changedNote,
+      });
     } catch (error) {
       res.sendStatus(500);
     }
@@ -126,7 +127,7 @@ const modifyUserNote = {
 const searchThroughNotes = {
   get: async (req, res) => {
     const userId = req.user.id;
-    const { title } = req.body;
+    const { title } = req.query;
 
     try {
       const allNotes = await findUserNotesByUserid(userId); //first get all notes from user

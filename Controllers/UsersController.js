@@ -23,6 +23,7 @@ const createUser = {
       //HASH the password
       const encryptedPassword = await hashPassword(password);
 
+      //I'm not adding an ID key here since we're getting one automatically from the database. So every user will have _id automatically instead.
       const user = {
         username: username,
         password: encryptedPassword,

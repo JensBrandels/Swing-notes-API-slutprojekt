@@ -1,0 +1,266 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Create your own notebook with Swing notes API",
+    "version": "1.0.0",
+    "title": "Swing Notes API"
+  },
+  "securityDefinitions": {
+    "JWT": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "paths": {
+    "/api/user/signup": {
+      "post": {
+        "summary": "Create a new user",
+        "description": "Creates a new user account.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "User object that needs to be added to the system",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User created successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          }
+        }
+      }
+    },
+    "/api/user/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Authenticates a user and generates a JWT token.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "User credentials",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User authenticated successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found or password incorrect"
+          }
+        }
+      }
+    },
+    "/api/notes": {
+      "post": {
+        "summary": "Create a note",
+        "description": "Creates a new note for the authenticated user.",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Note object to be created",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NoteInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Note created successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get user notes",
+        "description": "Retrieves all notes for the authenticated user.",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Notes retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/notes/{id}": {
+      "put": {
+        "summary": "Update a note",
+        "description": "Updates a note for the authenticated user.",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "ID of the note to be updated",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Note object with updated data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NoteInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Note updated successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Note not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a note",
+        "description": "Deletes a note for the authenticated user.",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "ID of the note to be deleted",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Note deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Note not found"
+          }
+        }
+      }
+    },
+    "/api/notes/search": {
+      "get": {
+        "summary": "Search notes",
+        "description": "Searches notes by title for the authenticated user.",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "title",
+            "description": "Title to search for",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notes retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "UserInput": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "LoginInput": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "NoteInput": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
