@@ -118,6 +118,9 @@
           "200": {
             "description": "Notes retrieved successfully"
           },
+          "404": {
+            "message": "No notes found for this user!"
+          },
           "401": {
             "description": "Unauthorized"
           }

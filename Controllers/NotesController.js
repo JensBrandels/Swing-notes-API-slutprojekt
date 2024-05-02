@@ -61,6 +61,13 @@ const getUserNotes = {
 
     try {
       const allNotes = await findUserNotesByUserid(userId);
+
+      if (allNotes.length == 0) {
+        return res
+          .status(404)
+          .send({ message: "No notes found for this user!" });
+      }
+
       res.status(200).send(allNotes);
     } catch (error) {
       res.sendStatus(500);

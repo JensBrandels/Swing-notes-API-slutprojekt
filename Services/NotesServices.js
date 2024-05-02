@@ -40,6 +40,7 @@ const findUserNotesByNoteId = async (id, userId) => {
 const updateNoteInDb = async (id, updatedNote) => {
   try {
     const result = await notesDB.update({ _id: id }, { $set: updatedNote }, {});
+    await notesDB.loadDatabase();
     return result;
   } catch (error) {
     console.log("Unable to update note in database");
