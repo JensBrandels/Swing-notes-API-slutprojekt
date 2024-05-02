@@ -15,26 +15,6 @@ const createNote = {
     const { title, text } = req.body;
     const userId = req.user.id; //getting the userID from the request from my middleware authentication
 
-    if (title.length > 50) {
-      return res
-        .status(400)
-        .send({ message: "Title can't be longer than 50 characters" });
-    }
-
-    if (text.length > 300) {
-      return res
-        .status(400)
-        .send({ message: "Text can't be longer than 300 characters" });
-    }
-
-    const createdNote = {
-      userId: userId,
-      title: title,
-      text: text,
-      createdAt: getDateAndTime(),
-      modifiedAt: getDateAndTime(),
-    };
-
     try {
       if (title == "" || text == "") {
         res
@@ -42,6 +22,26 @@ const createNote = {
           .send({ message: "Notes need to have a Title AND text!" });
         return;
       }
+      if (title.length > 50) {
+        return res
+          .status(400)
+          .send({ message: "Title can't be longer than 50 characters" });
+      }
+
+      if (text.length > 300) {
+        return res
+          .status(400)
+          .send({ message: "Text can't be longer than 300 characters" });
+      }
+
+      const createdNote = {
+        userId: userId,
+        title: title,
+        text: text,
+        createdAt: getDateAndTime(),
+        modifiedAt: getDateAndTime(),
+      };
+
       await addNote(createdNote);
       res.status(200).send({
         message: "Note has been added successfully!",
@@ -61,7 +61,6 @@ const getUserNotes = {
 
     try {
       const allNotes = await findUserNotesByUserid(userId);
-      // console.log("Found Notes", allNotes);
       res.status(200).send(allNotes);
     } catch (error) {
       res.sendStatus(500);
@@ -129,9 +128,14 @@ const searchThroughNotes = {
     const userId = req.user.id;
     const { title } = req.query;
 
+    if (title == "") {
+      return res
+        .status(400)
+        .send({ message: "You can't search on nothing ;)" });
+    }
+
     try {
       const allNotes = await findUserNotesByUserid(userId); //first get all notes from user
-      console.log(allNotes);
       const filteredNotes = await searchForNotes(allNotes, title);
       res.status(200).send({
         message: "These are the notes you found!",

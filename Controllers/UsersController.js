@@ -43,7 +43,6 @@ const loginUser = {
     const { username, password } = req.body;
     try {
       const user = await checkUser(username);
-      // console.log(user);
       if (user == null) {
         res.status(404).json({ message: "User not found" });
         return;

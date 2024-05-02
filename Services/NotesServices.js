@@ -50,7 +50,6 @@ const deleteNote = async (id) => {
   try {
     await notesDB.remove({ _id: id });
     await notesDB.loadDatabase();
-    console.log("Note deleted and database refreshed");
   } catch (err) {
     throw new Error("Couldn't delete the note!");
   }
